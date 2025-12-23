@@ -28,11 +28,11 @@ class Settings(BaseSettings):
 
     # Trellis settings
     trellis_model_id: str = Field(default="jetx/trellis-image-large", env="TRELLIS_MODEL_ID")
-    trellis_sparse_structure_steps: int = Field(default=10, env="TRELLIS_SPARSE_STRUCTURE_STEPS")
+    trellis_sparse_structure_steps: int = Field(default=8, env="TRELLIS_SPARSE_STRUCTURE_STEPS")
     trellis_sparse_structure_cfg_strength: float = Field(default=5.75, env="TRELLIS_SPARSE_STRUCTURE_CFG_STRENGTH")
     trellis_slat_steps: int = Field(default=20, env="TRELLIS_SLAT_STEPS")
     trellis_slat_cfg_strength: float = Field(default=2.4, env="TRELLIS_SLAT_CFG_STRENGTH")
-    trellis_num_oversamples: int = Field(default=7, env="TRELLIS_NUM_OVERSAMPLES")
+    trellis_num_oversamples: int = Field(default=3, env="TRELLIS_NUM_OVERSAMPLES")
     compression: bool = Field(default=False, env="COMPRESSION")
 
     # Qwen Edit settings
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     qwen_edit_prompt_path: Path = Field(default=config_dir.joinpath("qwen_edit_prompt.json"), env="QWEN_EDIT_PROMPT_PATH")
 
     # Backgorund removal settings
-    background_removal_model_id: str = Field(default="briaai/RMBG-1.4", env="BACKGROUND_REMOVAL_MODEL_ID")
+    background_removal_model_id: str = Field(default="hiepnd11/rm_back2.0", env="BACKGROUND_REMOVAL_MODEL_ID")
     input_image_size: tuple[int, int] = Field(default=(1024, 1024), env="INPUT_IMAGE_SIZE") # (height, width)
     output_image_size: tuple[int, int] = Field(default=(518, 518), env="OUTPUT_IMAGE_SIZE") # (height, width)
     padding_percentage: float = Field(default=0.2, env="PADDING_PERCENTAGE")

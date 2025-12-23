@@ -259,52 +259,12 @@ class TrellisImageTo3DPipeline(Pipeline):
         if preprocess_image:
             image = self.preprocess_image(image)
         cond = self.get_cond([image])
-        
-        # Generate multiple variants with different seeds and select best
-        if num_oversamples > 1:
-            coords = self._generate_with_random_seeds(
-                cond, seed, num_oversamples, num_samples, sparse_structure_sampler_params
-            )
-        else:
-            torch.manual_seed(seed)
-            coords = self.sample_sparse_structure(cond, num_samples, sparse_structure_sampler_params)
-        
+        torch.manual_seed(seed)
+        num_oversamples = max(num_samples, num_oversamples)
+        coords = self.sample_sparse_structure(cond, num_oversamples, sparse_structure_sampler_params)
+        coords = coords if num_oversamples <= num_samples else self.select_coords(coords, num_samples)
         slat = self.sample_slat(cond, coords, slat_sampler_params)
         return self.decode_slat(slat, formats)
-    
-    def _generate_with_random_seeds(
-        self,
-        cond: dict,
-        base_seed: int,
-        num_oversamples: int,
-        num_samples: int,
-        sampler_params: dict,
-    ) -> torch.Tensor:
-        """
-        Generate sparse structures with different random seeds and select the best one.
-        
-        Uses DINO feature similarity to select the variant most consistent with input.
-        """
-        all_coords = []
-        all_scores = []
-        
-        # Generate variants with different seeds
-        seed_offsets = [0, 1337, 2674, 4011, 5348]  # Different seeds for variety
-        for i in range(num_oversamples):
-            current_seed = base_seed + seed_offsets[i % len(seed_offsets)]
-            torch.manual_seed(current_seed)
-            
-            # Generate single sample with this seed
-            coords = self.sample_sparse_structure(cond, 1, sampler_params)
-            num_voxels = coords.shape[0]
-            all_coords.append(coords)
-            all_scores.append(num_voxels)
-        
-        # Select variant with median voxel count (not too sparse, not too dense)
-        median_score = sorted(all_scores)[len(all_scores) // 2]
-        best_idx = min(range(len(all_scores)), key=lambda i: abs(all_scores[i] - median_score))
-        
-        return all_coords[best_idx]
     
     def select_coords(self, coords, num_samples):
         """

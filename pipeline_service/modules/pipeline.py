@@ -123,10 +123,14 @@ class GenerationPipeline:
         # Decode input image
         image = decode_image(request.prompt_image)
 
-        # 1. Edit the image using Qwen Edit
-        image_edited = self.qwen_edit.edit_image(prompt_image=image, seed=request.seed)
-
-        # 2. Remove background
+        # NEW APPROACH: Remove background FIRST, then Qwen edit on clean object
+        # 1. Remove background first
+        image_without_background_step1 = self.rmbg.remove_background(image)
+        
+        # 2. Edit the clean image using Qwen Edit
+        image_edited = self.qwen_edit.edit_image(prompt_image=image_without_background_step1, seed=request.seed)
+        
+        # 3. Clean background again (just in case Qwen added artifacts)
         image_without_background = self.rmbg.remove_background(image_edited)
 
         trellis_result: Optional[TrellisResult] = None

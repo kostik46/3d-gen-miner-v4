@@ -120,7 +120,7 @@ class BackgroundRemovalService:
                 
         with torch.no_grad():
             # Get mask from model (1, 1, H, W)
-            preds = self.model(input_tensor)[0][-1].sigmoid()
+            preds = self.model(input_tensor)[-1].sigmoid()
             # Reshape and quantize mask values: (1, 1, H, W) -> (1, H, W) -> (H, W)
             mask = preds[0].squeeze().mul_(255).int().div(255).float()
 
